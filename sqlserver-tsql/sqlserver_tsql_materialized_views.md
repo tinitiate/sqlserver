@@ -1,0 +1,1 @@
+![Tinitiate SQLSERVER Training](../images/sqlserver.png)

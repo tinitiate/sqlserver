@@ -1,0 +1,1 @@
+![alt text](sqlserver.png "Tinitiate SQLSERVER Training")
