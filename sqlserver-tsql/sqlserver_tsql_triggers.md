@@ -51,28 +51,29 @@ drop trigger trg_trigger_test;
 
 create trigger trg_for_trigger_test
 on trigger_test
-for insert,update,delete
+for insert,update,delete -- DML
 as
 begin
 --
-  if (select count (*) from deleted) = 0
-  begin
-    insert into trigger_test_mirror (test_id,test_date,test_string,test_decimal,action_type)
-    select test_id,test_date,test_string,test_decimal,'INSERT' action_type
-    from   inserted;
-  end
-  else if (select count (*) from inserted) = 0
-  begin
-    insert into trigger_test_mirror (test_id,test_date,test_string,test_decimal,action_type)
-    select test_id,test_date,test_string,test_decimal,'DELETE' action_type
-    from   deleted;
-  end
-  else if (update (test_date) or update (test_string) or update (test_decimal))
+  if (update (test_date) or update (test_string) or update (test_decimal))
   begin
     insert into trigger_test_mirror (test_id,test_date,test_string,test_decimal,action_type)
     select test_id,test_date,test_string,test_decimal,'UPDATE' action_type
     from   inserted; -- USE DATA FROM INSERTED
   end 
+  else if (select count (*) from inserted) != 0
+  begin
+    insert into trigger_test_mirror (test_id,test_date,test_string,test_decimal,action_type)
+    select test_id,test_date,test_string,test_decimal,'INSERT' action_type
+    from   inserted;
+  end
+  else if (select count (*) from DELETED) != 0
+  begin
+    insert into trigger_test_mirror (test_id,test_date,test_string,test_decimal,action_type)
+    select test_id,test_date,test_string,test_decimal,'DELETE' action_type
+    from   deleted;
+  end
+
 --
 end;
 
@@ -111,6 +112,60 @@ delete from trigger_test where test_id = 1;
 select * from trigger_test;
 select * from trigger_test_mirror;
 ```
+* Trigger to change values
+```sql
+-- Create TRIGGER with ONLY INSERT handler 
+-- ---------------------------------------------------------
+create or alter trigger trg_for_trigger_test_upper
+on trigger_test
+for insert
+as
+begin
+  if (select count (*) from inserted) != 0)
+  begin
+    update trigger_test
+    set    test_string = (select upper(test_string) from inserted)
+    where  test_id     = (select test_id from inserted);
+  end
+end
+
+-- TEST --
+insert into trigger_test (test_id,test_date,test_string,test_decimal)
+values (2,getdate(),'lower',100.2)
+
+update trigger_test
+set    test_string = 'abc'
+where  test_id = 2
+-- See lower case 'abc' (as trigger doesnt handle updates)
+select * from trigger_test;
+
+
+-- Add UPDATE handler to TRIGGER
+-- ---------------------------------------------------------
+create or alter trigger trg_for_trigger_test_upper
+on trigger_test
+for insert,update
+as
+begin
+  if ((select count (*) from inserted) != 0) or update(test_string)
+  begin
+    update trigger_test
+    set    test_string = (select upper(test_string) from inserted)
+    where  test_id     = (select test_id from inserted);
+  end
+end
+
+-- TEST --
+update trigger_test
+set    test_string = 'abc'
+where  test_id = 2
+-- See upper case 'abc'
+select * from trigger_test;
+
+```
+
+
+
 
 ### DML AFTER Triggers
 An "AFTER" trigger, as the name suggests, is executed after the data modification operation is carried out. It can be used to perform additional actions based on the changes made to the table.
@@ -184,7 +239,7 @@ select * from trigger_test;
 select * from trigger_test_mirror;
 ```
 
-### DML AFTER Triggers
+### DML INSTEAD OF Triggers
 "INSTEAD OF" trigger is a type of trigger that can be used to override the default behavior of an insert, update, or delete operation on a view or a table that has an associated INSTEAD OF trigger. An INSTEAD OF trigger is executed instead of the original insert, update, or delete operation and can be used to modify the data being inserted, updated, or deleted, or to perform additional actions.
 ```sql
 create view vw_trigger_test
@@ -210,6 +265,33 @@ values (3,getdate(),'new line',100.2)
 select * from trigger_test;
 select * from trigger_test_mirror;
 ```
+* Instead Of on table
+```sql
+create or alter trigger trg_instead_trigger_test_upper
+on trigger_test
+instead of insert
+as
+begin
+  if (select count (*) from inserted) != 0)
+  begin
+    insert into trigger_test
+    select test_id,test_date,upper(test_string),test_decimal
+    from   inserted;
+  end
+end
+
+-- TEST --
+insert into trigger_test (test_id,test_date,test_string,test_decimal)
+values (2,getdate(),'lower',100.2)
+
+update trigger_test
+set    test_string = 'abc'
+where  test_id = 2
+-- See lower case 'abc' (as trigger doesnt handle updates)
+select * from trigger_test;
+
+```
+
 
 ### Multiple Triggers
 sp_settriggerorder
@@ -248,4 +330,7 @@ disable trigger dbo.trg_instead_trigger_test on dbo.vw_trigger_test;
 
 enable trigger all on dbo.trigger_test;
 disable trigger all on dbo.trigger_test;
+
+-- Drop DB triggers
+DROP TRIGGER trg_tinitiate_ddl ON database;  
 ```
