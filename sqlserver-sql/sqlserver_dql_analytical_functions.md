@@ -1,265 +1,182 @@
 ![Tinitiate SQLSERVER Training](../images/sqlserver.png)
-# SQLSERVER SQL DQL - Data Query Language
+# SQLSERVER SQL DQL - Analytical Functions
 > (c) Venkata Bhattaram / Tinitiate.com
 
-* Data Query Language (DQL) is a set of SQL statements that are used to retrieve data from a database. DQL statements are used to select, filter, and sort data from tables, views, and other database objects.
+* SQL Server provides a set of analytical functions that allow you to perform advanced calculations and aggregations on your data. These functions operate on a group of rows and return a single result for each group, based on the values in one or more columns. Here are some examples of commonly used analytical functions in SQL Server:
 
-* DQL statement Select Clause components
-     * SELECT: This statement is used to select data **from** a table or view.
-    * WHERE: This clause is used to filter and /or **join** the rows that are returned by the SELECT statement.
-    * GROUP BY: This clause is used to group the rows that are returned by the SELECT statement.
-    * HAVING: This clause is used to filter the groups that are returned by the GROUP BY clause.
-    * ORDER BY: This clause is used to sort the rows that are returned by the SELECT statement.
-    * TOP: This clause is used to limit the number of rows that are returned by the SELECT statement.
-* DQL statements are used to retrieve data from a database. They are the most commonly used type of SQL statement.
+    * ROW_NUMBER(): This function assigns a unique sequential number to each row within a result set, based on the specified order.
+    * RANK(), DENSE_RANK(), and NTILE(): These functions are used to assign a ranking or percentile value to each row within a result set, based on the specified order.
+    * LAG() and LEAD(): These functions allow you to access data from other rows within the same result set, either before or after the current row.
+    * SUM(), AVG(), MIN(), and MAX(): These functions are used to calculate aggregations over a group of rows, based on the values in one or more columns.
+    * FIRST_VALUE() and LAST_VALUE(): These functions allow you to access the first or last value in a group of rows, based on the specified order.
+    * PERCENTILE_CONT() and PERCENTILE_DISC(): These functions allow you to calculate a specified percentile value over a group of rows, either using a continuous or discrete distribution.
 
+## Analytical Functions MIN, MAX, SUM, AVG, COUNT
+* Get Raw data and MIN, MAX, SUM, AVG, COUNT Aggregate functions in a single select statement
 ```sql
--- Check Data
--- ----------
-select *
-from   employees.dept;
-
--- Insert data to EMP table
-insert into employees.emp values (7369, 'smith', 'clerk', 7902, '17-dec-1980', 800, null, 1);
-insert into employees.emp values (7499, 'allen', 'salesman', 7698, '20-feb-1981', 1600, null, 2);
-insert into employees.emp values (7521, 'ward', 'salesman', 7698, '22-feb-1981', 1250, null, 2);
-insert into employees.emp values (7566, 'jones', 'manager', 7839, '2-apr-1981', 2975, null, 3);
-insert into employees.emp values (7654, 'martin', 'salesman', 7698, '28-sep-1981', 1250, 1400, 1);
-insert into employees.emp values (7698, 'blake', 'manager', 7839, '1-may-1981', 2850, null, 3);
-insert into employees.emp values (7782, 'clark', 'manager', 7839, '9-jun-1981', 2450, null, 1);
-insert into employees.emp values (7788, 'scott', 'analyst', 7566, '09-dec-1982', 3000, null, 2);
-insert into employees.emp values (7839, 'king', 'president', null, '17-nov-1981', 5000, null, 1);
-insert into employees.emp values (7844, 'turner', 'salesman', 7698, '8-sep-1981', 1500, 0, 3);
-insert into employees.emp values (7876, 'adams', 'clerk', 7788, '12-jan-1983', 1100, null, 2);
-insert into employees.emp values (7900, 'james', 'clerk', 7698, '3-dec-1981', 950, null, 3);
-insert into employees.emp values (7902, 'ford', 'analyst', 7566, '3-dec-1981', 3000, null, 2);
-insert into employees.emp values (7934, 'miller', 'clerk', 7782, '23-jan-1982', 1300, null, 1);
-insert into employees.emp values (8000, 'NEWHIRE', 'clerk', 7782, '01-jan-1984', 1300, null, null);
-
--- FK failure scenario
-insert into employees.emp values (8000, 'miller', 'clerk', 7782, '23-jan-1982', 1300, null, 10);
-
-select * from employees.emp;
-
-
--- DQL = Data Query Language
+-- Analytical Functions MIN, MAX, SUM, AVG, COUNT
 -- ---------------------------------------------
-
+-- RAW Data
 select *
-from   employees.dept;
+from   employees.emp e;
 
+-- MIN, MAX, SUM, AVG, COUNT For each Dept
+select  deptno
+       ,max(sal) max_dept_sal
+       ,min(sal) min_dept_sal
+       ,sum(sal) tot_dept_sal
+       ,avg(sal)avg_dept_sal
+from  employees.emp e
+group by deptno;
 
--- JOINS
-select  d.dname
-from    employees.dept d
-       ,employees.emp e
-where  e.empno = 7521
-and    d.deptid = e.deptno
+-- Raw data and MIN, MAX, SUM, AVG, COUNT Aggregate functions WRT. every dept
+SELECT  e.*
+       ,max(sal) OVER () AS max_sal
+       ,max(sal) OVER (PARTITION BY deptno) AS max_dept_sal
+       ,min(sal) OVER (PARTITION BY deptno) AS min_dept_sal
+       ,sum(sal) OVER (PARTITION BY deptno) AS tot_dept_sal
+       ,avg(sal) OVER (PARTITION BY deptno) AS avg_dept_sal
+       ,count(1) OVER (PARTITION BY deptno) AS emp_count_by_dept
+FROM   employees.emp e;
+```
 
+## ROW_NUMBER 
+* The ROW_NUMBER analytic function assigns a unique number to each row in a result set, starting with 1. The number is assigned in the order specified by the ORDER BY clause.
+```sql
+select  row_number() over (order by sal)      sal_rn_asc
+       ,row_number() over (order by sal desc) sal_rn_desc
+       ,row_number() over (order by empno)    empno_rn
+       ,e.*
+from   employees.emp e
+order by deptno;
+```
+* The ROW_NUMBER() function is a window function that assigns a sequential integer to each row within the partition of a result set. The row number starts with 1 for the first row in each partition.
+* The PARTITION BY clause is used to divide the result set into partitions. The ROW_NUMBER() function is then applied to each partition separately and reinitialized the row number for each partition.
+```sql
+select  row_number() over (partition by deptno order by sal)      sal_rn_asc
+       ,row_number() over (partition by deptno order by sal desc) sal_rn_desc
+       ,row_number() over (partition by deptno order by empno)    empno_rn
+       ,e.*
+from   employees.emp e
+order by deptno;
+```
 
--- Aggregate Functions -> will return only one row and one column
--- MIN MAX AVG SUM COUNT
+## RANK
+* The RANK() function is a window function that assigns a rank to each row in a result set, starting with 1 for the row with the highest value in the specified column. If two or more rows have the same value, they will be assigned the same rank.
+```sql
+select  e.*
+       ,rank() over (order by sal desc) as rank
+       ,dense_rank() over (order by sal desc) as dense_rank
+       ,row_number() over (order by sal desc) as rn
+from   employees.emp e;
+```
 
--- ALL ROWS and ALL COLUMNS
-select *
+* The RANK() function is a window function that assigns a rank to each row in a result set, starting with 1 for the row with the highest value in the specified column. If two or more rows have the same value, they will be assigned the same rank.
+* The PARTITION BY clause is used to divide the result set into partitions. The RANK() function is then applied to each partition separately and reinitialized the rank for each partition.
+```sql
+select  e.*
+       ,rank()       over (partition by deptno order by sal desc) as rank
+       ,dense_rank() over (partition by deptno order by sal desc) as dense_rank
+       ,row_number() over (partition by deptno order by sal desc) as rn
+from   employees.emp e;
+
+```
+
+## DENSE_RANK
+* The DENSE_RANK() function is a window function that assigns a rank to each row in a result set, starting with 1 for the row with the highest value in the specified column. If two or more rows have the same value, they will be assigned the same rank. However, unlike the RANK() function, DENSE_RANK() does not skip ranks for rows with the same value.
+```SQL 
+select  e.*
+       ,rank() over (order by sal desc) as rank
+       ,dense_rank() over (order by sal desc) as dense_rank
+       ,row_number() over (order by sal desc) as rn
+from   employees.emp e;
+```
+
+* The DENSE_RANK() function is a window function that assigns a rank to each row in a result set, starting with 1 for the row with the highest value in the specified column. If two or more rows have the same value, they will be assigned the same rank. However, unlike the RANK() function, DENSE_RANK() does not skip ranks for rows with the same value.
+* The PARTITION BY clause is used to divide the result set into partitions. The DENSE_RANK() function is then applied to each partition separately and reinitialized the rank for each partition.
+```SQL 
+select  e.*
+       ,rank()       over (partition by deptno order by sal desc) as rank
+       ,dense_rank() over (partition by deptno order by sal desc) as dense_rank
+       ,row_number() over (partition by deptno order by sal desc) as rn
+from   employees.emp e;
+```
+
+## NTILE
+* The NTILE analytic function in SQL divides an ordered result set into a specified number of groups, or buckets. The groups are numbered, starting at one. For each row, NTILE returns the number of the group to which the row belongs.
+* The syntax for the NTILE function is as follows:
+* Code snippet: `NTILE(n) OVER ([PARTITION BY <expression>] ORDER BY <expression>)`
+    * n is a positive integer that specifies the number of groups into which the result set should be divided.
+    * PARTITION BY is an optional clause that can be used to divide the result set into multiple partitions before the NTILE function is applied.
+    * ORDER BY is an optional clause that specifies the order in which the rows in the result set should be sorted before the NTILE function is applied.
+```sql
+SELECT empno, sal, NTILE(4) OVER (ORDER BY sal) AS bucket
+FROM employees.emp;
+```
+* The NTILE function can also be used with the PARTITION BY clause to divide a result set into groups based on the value of a column.
+```sql
+SELECT empno, deptno, NTILE(4) OVER (PARTITION BY deptno ORDER BY sal) AS bucket
+FROM   employees.emp;
+```
+
+## LEAD
+* The LEAD function in SQL is an analytic function that returns the value of an expression from a subsequent row within the partition.
+```sql
+select  empno, sal 
+       ,lead(sal) over (order by sal) next_salary
+       ,lag(sal) over (order by sal)  previous_salary
 from   employees.emp;
+```
+* The LEAD function can also be used with the PARTITION BY clause to return the value of an expression from a subsequent row within the partition. 
+```sql
+SELECT employee_id, department, salary, LEAD(salary) OVER (PARTITION BY department ORDER BY salary) AS next_salary
+FROM employees
+WHERE department = 'Sales';
+```
 
--- Get Max of sal across all departments
-select  max(sal) max_sal,min(sal)
-       ,sum(sal),count(sal),sum(sal)/count(sal) avg, avg(sal)
-from   employees.emp;
+## LAG
+* The LAG function in SQL is an analytic function that returns the value of an expression from a previous row within the partition. 
+```sql
+SELECT employee_id, salary, LAG(salary) OVER (ORDER BY salary) AS previous_salary
+FROM employees;
+```
 
--- Get Max of sal in finance department by deptID/deptNO
-select max(sal)
+* The LAG function can also be used with the PARTITION BY clause to return the value of an expression from a previous row within the partition.
+```sql
+SELECT employee_id, department, salary, LAG(salary) OVER (PARTITION BY department ORDER BY salary) AS previous_salary
+FROM employees
+WHERE department = 'Sales';
+```
+
+## FIRST_VALUE
+* The FIRST_VALUE function in SQL is an analytic function that returns the first value of an expression in an ordered partition of a result set.
+```sql
+select  deptno, empno, sal
+       ,first_value(sal) over (order by sal,empno) as first_salary
+       ,last_value(sal)  over (order by sal,empno) as last_salary
 from   employees.emp
-where  deptno=3;
+```
+* The FIRST_VALUE function can also be used with the PARTITION BY clause to return the first value of an expression in an ordered partition of a result set. 
+```sql
+select  deptno, empno, sal
+       ,first_value(sal) over (partition by deptno order by sal,empno) as first_salary
+       ,last_value(sal)  over (partition by deptno order by sal,empno) as last_salary
+from   employees.emp
+where  deptno = 2
+```
 
--- Get Max of sal in finance department by dname
-select max(sal)
-from   employees.dept d
-       ,employees.emp e
-where  d.dname = 'FINANCE'
-and    d.deptid = e.deptno
-
-select max(sal)
-from   employees.dept d
-       ,employees.emp e
-where  d.deptid = 3
-and    d.deptid = e.deptno
-
-select max(sal)
-from   employees.dept d
-       ,employees.emp e
-where  e.deptno = 3
-and    d.deptid = e.deptno
-
-
--- get the name of emp who makes the highest sal across all depts
-
--- 1. Check the emp table
---
-select * from employees.emp e
-
--- 2. Get Max Sal from emp table
--- a. This returns A SINGLE VALUE =(One Row One Column)
-select max(e.sal) from employees.emp e
-
--- 3. Join MAX SAL with EMP.SAL (Like to Like, Sal to another Sal )
-select e.ename
-from   employees.emp e
-where  e.sal = (select max(e.sal) from employees.emp e);
-
-
--- The below syntax is invalid
--- ----------------------------
--- select e.ename
--- from   employees.emp e
--- where  e.sal = max(e.sal)
-
--- Get the Name of Dept of the lowest salary maker
-
--- 1. get lowest sal maker
--- 1a. Get the lowest sal 
-select min(e.sal) from employees.emp e
-
--- 1b. Get the name and dept of teh lowest sal maker
-select e.ename, e.deptno 
-from   employees.emp e
-where  e.sal = (select min(e.sal) from employees.emp e)
-
--- 2. Join DEPT to the (1b) query to get the corresponding DNAME
-select e.ename, e.deptno ,d.dname 
-from   employees.emp e,
-       employees.dept d
-where  e.sal = (select min(e.sal) from employees.emp e)
-and d.deptid = e.deptno
-
-
--- GROUP BY
--- With Respect To a Column(s)
-select * from employees.emp e
-
--- Get the Total sal for each dept
-select sum(e.sal),min(e.sal),max(e.sal),count(e.sal),e.deptno 
-from   employees.emp e
-group by e.deptno 
-
--- DISTINCT
-select e.deptno from employees.emp e
-select DISTINCT e.deptno from employees.emp e
-
--- Get DNAME, in which the salary is greatest 
--- AND less than 3000, in each department
-1. Get MAX SAL < 3000 in all DEPTS
-
-select max(e.sal) max_sal, e.deptno,d.dname 
-from   employees.emp e
-       ,employees.dept d 
-where  e.sal < 3000
-and    d.deptid = e.deptno 
-group by e.deptno ,d.dname 
--- group by d.deptid ,d.dname
-
-
-
--- IN and NOT IN Clause
--- Get Details of a given Empno
-select e.* 
-from   employees.emp e
-where  e.empno = 7499;
-
--- Get Details of more than ONE Empno
-select e.* 
-from   employees.emp e
-where  e.empno in (7369,7499,7521,7566);
-
-select e.* 
-from   employees.emp e
-where  e.empno not in (7369,7499,7521,7566);
-
-
--- OUTER JOINS
--- SQL92 JOIN SYNTAX
-select *
-from   employees.emp e
-       ,employees.dept d 
-where  d.deptid = e.deptno
-
--- ANSI JOIN SYNTAX
-select *
-from   employees.emp e
-inner join employees.dept d 
-on d.deptid = e.deptno;
-
-
-select * from employees.dept d
-select * from   employees.emp e
-select distinct e.deptno from   employees.emp e
-
--- FULL OUTER JOIN
-select *
-from   employees.emp e
-full outer join employees.dept d 
-on d.deptid = e.deptno;
-
--- LEFT OUTER JOIN
-select *
-from   employees.emp e
-left outer join employees.dept d 
-on d.deptid = e.deptno;
-
--- RIGHT OUTER JOIN
-select *
-from   employees.emp e
-right outer join employees.dept d 
-on d.deptid = e.deptno;
-
-select *
-from   employees.dept d
-left join employees.emp e 
-on d.deptid = e.deptno;
-
--- HAVING CLAUSE
-select max(e.sal) max_sal, e.deptno,d.dname 
-from   employees.emp e
-       ,employees.dept d 
--- where  e.sal < 3000
-where    d.deptid = e.deptno 
-group by e.deptno ,d.dname 
-having max(e.sal) < 3001
-
-
-select * from   employees.emp e
-
-select max(e.sal) max_sal, e.deptno,d.dname 
-from   employees.emp e
-       ,employees.dept d 
-where  e.sal < 3000
-and    d.deptid = e.deptno 
-group by e.deptno ,d.dname 
-
-
--- ORDER BY
--- Get emp details by salary earnings
-select * from employees.emp e
-order by e.sal;
-
-select * from employees.emp e
-order by e.sal desc
-
-select * from employees.emp e
-order by e.deptno asc ,e.sal desc
-
-select * from employees.emp e
-order by e.deptno desc,e.sal;
-
-
-select * from employees.emp e
-order by e.deptno desc,e.sal desc;
-
-select * from employees.emp e
-where e.sal < 3000
-order by e.deptno desc,e.sal desc;
-
--- Exists and Not Exists
+## LAST_VALUE
+* The LAST_VALUE function in SQL is an analytic function that returns the last value of an expression in an ordered partition of a result set.
+```sql
+select  deptno, empno, sal
+       ,first_value(sal) over (partition by deptno order by sal,empno) as first_salary
+       ,last_value(sal)  over (partition by deptno order by sal,empno) as last_salary
+from   employees.emp
+where  deptno = 2
+```
+* The LAST_VALUE function can also be used with the PARTITION BY clause to return the last value of an expression in an ordered partition of a result set
+```sql
+SELECT employee_id, department, salary, LAST_VALUE(salary) OVER (PARTITION BY department ORDER BY salary) AS last_salary
+FROM employees
+WHERE department = 'Sales';
 ```
