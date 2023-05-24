@@ -58,22 +58,24 @@
 * * *
 > OUT OF SCOPE
 ## For Future and Advanced Courses
-    * Calling API (WebService) from DB
-    * Hints, Experience with blocking and deadlocking issues
-    * replication issues
-    * log shipping issues
-    * connectivity issues
-    * security issues
-    * Experience in Performance Tuning
-    * Query Optimization
-    * using Performance Monitor
-    * SQL Profiler
-    * Monitoring and troubleshooting tools
-    * SQL HA solutions like SQL Clustering, ALWAYS ON
-    * Database mirroring and Replication
+* Calling API (WebService) from DB
+* Hints, Experience with blocking and deadlocking issues
+* replication issues
+* log shipping issues
+* connectivity issues
+* security issues
+* Experience in Performance Tuning
+* Query Optimization
+* using Performance Monitor
+* SQL Profiler
+* Monitoring and troubleshooting tools
+* SQL HA solutions like SQL Clustering, ALWAYS ON
+* Database mirroring and Replication
 
 ## Administration
 * Information Schema
 * Backups and Restore
 * User Management
 * Roles and Grants/Deny
+
+> OUT OF SCOPE
