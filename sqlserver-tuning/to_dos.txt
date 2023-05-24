@@ -1,0 +1,4 @@
+- Indexes
+- partitioning
+- Mat Views
+- Explain Plan
