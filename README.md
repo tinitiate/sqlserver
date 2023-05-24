@@ -40,9 +40,10 @@
 * System Views
 * SET Parameters
 * SP_ Functions / Procedure
-* Logger
 * Working with JSON
 * Working with XML
+* Logger
+* Job Scheduler
 * System Architecture
 
 ## Client Tools
