@@ -15,7 +15,6 @@
 * String Functions
 * Date Functions
 
-
 ## T-SQL
 * Variables and Operators
 * Conditional Statements
@@ -31,13 +30,34 @@
 * Dynamic SQL
 * Temp Tables
 
-
 ## Performance Tuning
 * Indexes
 * Partitioning
 * Materialized Views
 * Explain Plan
-*  MISC OUT OF SCOPE
+
+## Advanced Concepts
+* System Views
+* SET Parameters
+* SP_ Functions / Procedure
+* Logger
+* Working with JSON
+* Working with XML
+* System Architecture
+
+## Client Tools
+* SQLCMD
+* BCP
+
+## Assignments
+* DDL Assignment
+* SQL Assignments
+* TSQL Invoicing Project
+
+* * *
+> OUT OF SCOPE
+## For Future and Advanced Courses
+    * Calling API (WebService) from DB
     * Hints, Experience with blocking and deadlocking issues
     * replication issues
     * log shipping issues
@@ -51,21 +71,8 @@
     * SQL HA solutions like SQL Clustering, ALWAYS ON
     * Database mirroring and Replication
 
-## Advanced Concepts
-* SET Parameters
-* SP_ Functions / Procedure
-
-## Client Tools
-* SQLCMD
-* BCP
-
 ## Administration
 * Information Schema
 * Backups and Restore
 * User Management
 * Roles and Grants/Deny
-
-## Assignments
-* DDL Assignment
-* SQL Assignments
-* TSQL Invoicing Project
