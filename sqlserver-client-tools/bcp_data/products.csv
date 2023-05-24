@@ -1,0 +1,26 @@
+product_id,product_category,product_name,unit_price
+1,FROZEN,Ice Cream,2.5
+2,FROZEN,Green Peas,2.0
+3,FROZEN,Corn,2.0
+4,FROZEN,Meat,5.0
+5,FROZEN,Pizza,4.0
+6,OFFICE SUPPLIES,Paper,5.0
+7,OFFICE SUPPLIES,Pens,4.0
+8,OFFICE SUPPLIES,Ink,5.0
+9,OFFICE SUPPLIES,Chair,100.0
+10,OFFICE SUPPLIES,Folder,2.0
+11,Kitchen,Plates,3.0
+12,Kitchen,Bowls,3.0
+13,Kitchen,Spoon,1.0
+14,Kitchen,Fork,1.0
+15,Kitchen,Napkins,4.0
+16,FRUITS,Apple,2.0
+17,FRUITS,Banana,1.0
+18,FRUITS,Pear,2.0
+19,FRUITS,Grapes,3.0
+20,FRUITS,Watermelon,5.0
+21,Home Goods,Bulbs,3.0
+22,Home Goods,Cleaning Liquid,4.0
+23,Home Goods,Wipes,3.0
+24,Home Goods,Air Freshner,3.5
+25,Home Goods,Batteries,1.5
