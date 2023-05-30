@@ -69,3 +69,35 @@ where not exists (select 1
                   where  id.invoice_id = i.invoice_id)
 
 ```
+
+
+## SQLCMD
+SQLCMD is a command-line utility in SQL Server that allows you to interact with SQL Server databases using Transact-SQL (T-SQL) commands. It provides a way to execute queries, scripts, and commands from the command prompt or script files.
+
+* Execute a script
+```sql
+sqlcmd -S localhost -U sa -P tinitiate_01 -d tinitiate -i E:\TinitiateContent\tinitiate-sqlserver\sqlserver-client-tools\sqlcmd_source.sql -o E:\TinitiateContent\tinitiate-sqlserver\sqlserver-client-tools\productsmar30_src_file.txt
+```
+
+* Execute a query and capture output to a file.
+```sql
+sqlcmd -S localhost -U sa -P tinitiate_01 -d tinitiate -Q "select * from invoicing.products" -o E:\TinitiateContent\tinitiate-sqlserver\sqlserver-client-tools\productsmar30.txt
+```
+
+* Execute a stored procedure and capture output to a file.
+
+```sql
+-- Create a Proc
+create procedure dbo.add2nums @num1 int, @num2 int
+as
+    declare @res int;
+    set @res = @num1 + @num2
+    print 'Result is ' + cast(@res as varchar(100))
+```
+```sql
+sqlcmd -S localhost -U sa -P tinitiate_01 -d tinitiate -Q "exec dbo.add2nums 10,20" -o E:\TinitiateContent\tinitiate-sqlserver\sqlserver-client-tools\proc_res.txt
+```
+
+
+
+
