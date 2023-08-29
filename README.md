@@ -1,6 +1,6 @@
 ![Tinitiate SQLSERVER Training](images/sqlserver.png)
 # SQL SERVER
-
+HELLO
 ## SQL
 * Database (Create, Alter, Drop)
 * Tables (Create, Alter, Drop)
